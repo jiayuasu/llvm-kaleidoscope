@@ -1,25 +1,26 @@
 #include "ast/CallExprAST.h"
 
 // Generate LLVM code for function calls
-llvm::Value *CallExprAST::codegen() {
-  llvm::Function *CalleeF = TheModule->getFunction(Callee);
+llvm::Value *CallExprAST::codegen(std::unique_ptr<llvm::Module> &TheModule) {
+    llvm::Function *CalleeF = TheModule->getFunction(Callee);
 
-  if (!CalleeF) {
-    return LogErrorV("Unknown function referenced");
-  }
-
-  if (CalleeF->arg_size() != Args.size()) {
-    return LogErrorV("Incorrect # arguments passed");
-  }
-
-  std::vector<llvm::Value *> ArgsV;
-  for (unsigned i = 0, e = Args.size(); i != e; i++) {
-    ArgsV.push_back(Args[i]->codegen());
-
-    if (!ArgsV.back()) {
-      return nullptr;
+    if (!CalleeF) {
+        return LogErrorV("Unknown function referenced");
     }
-  }
 
-  return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
+    if (CalleeF->arg_size() != Args.size()) {
+        return LogErrorV("Incorrect # arguments passed");
+    }
+
+    std::vector<llvm::Value *> ArgsV;
+    auto size = Args.size();
+    for (unsigned i = 0; i != size; i++) {
+        ArgsV.push_back(Args[i]->codegen(TheModule));
+
+        if (!ArgsV.back()) {
+            return nullptr;
+        }
+    }
+
+    return Builder.CreateCall(CalleeF, ArgsV, "calltmp");
 }
