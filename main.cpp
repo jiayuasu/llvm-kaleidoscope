@@ -11,9 +11,10 @@
 
 using namespace llvm;
 
-static void HandleDefinition(std::unique_ptr<llvm::Module> &TheModule) {
+static void HandleDefinition(std::unique_ptr<llvm::Module> &TheModule,
+                             std::unique_ptr<llvm::legacy::FunctionPassManager> &TheFPM) {
     if (auto FnAST = ParseDefinition()) {
-        if (auto *FnIR = FnAST->codegen(TheModule)) {
+        if (auto *FnIR = FnAST->codegen(TheModule, TheFPM)) {
             fprintf(stderr, "Read function definition:");
             FnIR->print(errs());
             fprintf(stderr, "\n");
@@ -35,9 +36,10 @@ static void HandleExtern(std::unique_ptr<llvm::Module> &TheModule) {
     }
 }
 
-static void HandleTopLevelExpression(std::unique_ptr<llvm::Module> &TheModule) {
+static void HandleTopLevelExpression(std::unique_ptr<llvm::Module> &TheModule,
+                                     std::unique_ptr<llvm::legacy::FunctionPassManager> &TheFPM) {
     if (auto FnAST = ParseTopLevelExpr()) {
-        if (auto *FnIR = FnAST->codegen(TheModule)) {
+        if (auto *FnIR = FnAST->codegen(TheModule, TheFPM)) {
             fprintf(stderr, "Read top-level expression:");
             FnIR->print(errs());
             fprintf(stderr, "\n");
@@ -47,7 +49,8 @@ static void HandleTopLevelExpression(std::unique_ptr<llvm::Module> &TheModule) {
     }
 }
 
-static void MainLoop(std::unique_ptr<llvm::Module> &TheModule) {
+static void MainLoop(std::unique_ptr<llvm::Module> &TheModule,
+                     std::unique_ptr<llvm::legacy::FunctionPassManager> &TheFPM) {
     while (true) {
         fprintf(stderr, "ready> ");
 
@@ -58,13 +61,13 @@ static void MainLoop(std::unique_ptr<llvm::Module> &TheModule) {
                 getNextToken();
                 break;
             case tok_def:
-                HandleDefinition(TheModule);
+                HandleDefinition(TheModule, TheFPM);
                 break;
             case tok_extern:
                 HandleExtern(TheModule);
                 break;
             default:
-                HandleTopLevelExpression(TheModule);
+                HandleTopLevelExpression(TheModule, TheFPM);
                 break;
         }
     }
@@ -81,7 +84,9 @@ int main() {
 
     std::unique_ptr<llvm::Module> TheModule = llvm::make_unique<Module>("My awesome JIT", TheContext);
 
-    MainLoop(TheModule);
+    std::unique_ptr<llvm::legacy::FunctionPassManager> TheFPM = GetFunctionPassManager(TheModule);
+
+    MainLoop(TheModule, TheFPM);
 
     TheModule->print(errs(), nullptr);
 

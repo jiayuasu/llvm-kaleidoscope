@@ -1,7 +1,8 @@
 #include "ast/FunctionAST.h"
 
 // Generates LLVM code for functions declarations
-llvm::Function *FunctionAST::codegen(std::unique_ptr<llvm::Module> &TheModule) {
+llvm::Function *FunctionAST::codegen(std::unique_ptr<llvm::Module> &TheModule,
+                                     std::unique_ptr<llvm::legacy::FunctionPassManager> &TheFPM) {
     llvm::Function *TheFunction = TheModule->getFunction(Proto->getName());
 
     if (!TheFunction) {
@@ -22,6 +23,9 @@ llvm::Function *FunctionAST::codegen(std::unique_ptr<llvm::Module> &TheModule) {
     if (llvm::Value *RetVal = Body->codegen(TheModule)) {
         Builder.CreateRet(RetVal);
         verifyFunction(*TheFunction);
+
+        // Optimize the function.
+        TheFPM->run(*TheFunction);
 
         return TheFunction;
     }

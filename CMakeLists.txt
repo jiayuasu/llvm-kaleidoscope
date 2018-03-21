@@ -23,7 +23,10 @@ set(SOURCES
 
         logger/logger.cpp
 
-        parser/parser.cpp)
+        parser/parser.cpp
+
+        optimization/optimization.cpp
+        optimization/optimization.h)
 
 set(HEADERS
         ast/ExprAST.h)
@@ -35,7 +38,7 @@ add_executable(main main.cpp ${HEADERS} ${SOURCES})
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
-llvm_map_components_to_libnames(llvm_libs support core irreader)
+llvm_map_components_to_libnames(llvm_libs support core irreader scalaropts)
 
 # Link against LLVM libraries
 target_link_libraries(main ${llvm_libs})
