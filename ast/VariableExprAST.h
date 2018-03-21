@@ -6,11 +6,12 @@
 
 // Expression class for referencing a variable, like "a"
 class VariableExprAST : public ExprAST {
-  std::string Name;
+    std::string Name;
 
 public:
-  VariableExprAST(const std::string &Name) : Name(Name) {}
-  llvm::Value *codegen() override;
+    VariableExprAST(const std::string &Name) : Name(Name) {}
+
+    llvm::Value *codegen() override;
 };
 
 #endif

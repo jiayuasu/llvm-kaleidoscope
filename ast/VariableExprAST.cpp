@@ -2,11 +2,11 @@
 
 // We assume that the variable has already been emitted somewhere
 llvm::Value *VariableExprAST::codegen() {
-  llvm::Value *V = NamedValues[Name];
+    llvm::Value *V = NamedValues[Name];
 
-  if (!V) {
-    LogErrorV("Unknown variable name");
-  }
+    if (!V) {
+        LogErrorV("Unknown variable name");
+    }
 
-  return V;
+    return V;
 }

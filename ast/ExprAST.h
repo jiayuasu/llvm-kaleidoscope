@@ -5,8 +5,9 @@
 
 class ExprAST {
 public:
-  virtual ~ExprAST() {}
-  virtual llvm::Value *codegen() = 0;
+    virtual ~ExprAST() {}
+
+    virtual llvm::Value *codegen() = 0;
 };
 
 #endif
