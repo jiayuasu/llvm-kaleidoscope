@@ -3,4 +3,7 @@
 *.dSYM
 *.o
 
+/.idea/
+/main
+
 /llvm
