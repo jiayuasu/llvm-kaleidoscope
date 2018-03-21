@@ -5,9 +5,9 @@
 
 class ExprAST {
 public:
-    virtual ~ExprAST() {}
+    virtual ~ExprAST() = default;
 
-    virtual llvm::Value *codegen() = 0;
+    virtual llvm::Value *codegen(std::unique_ptr<llvm::Module> &TheModule) = 0;
 };
 
 #endif

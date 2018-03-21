@@ -1,7 +1,7 @@
 #include "ast/CallExprAST.h"
 
 // Generate LLVM code for function calls
-llvm::Value *CallExprAST::codegen() {
+llvm::Value *CallExprAST::codegen(std::unique_ptr<llvm::Module> &TheModule) {
     llvm::Function *CalleeF = TheModule->getFunction(Callee);
 
     if (!CalleeF) {
@@ -13,8 +13,9 @@ llvm::Value *CallExprAST::codegen() {
     }
 
     std::vector<llvm::Value *> ArgsV;
-    for (unsigned i = 0, e = Args.size(); i != e; i++) {
-        ArgsV.push_back(Args[i]->codegen());
+    auto size = Args.size();
+    for (unsigned i = 0; i != size; i++) {
+        ArgsV.push_back(Args[i]->codegen(TheModule));
 
         if (!ArgsV.back()) {
             return nullptr;

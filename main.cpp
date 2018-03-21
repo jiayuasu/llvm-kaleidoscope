@@ -6,22 +6,14 @@
 #include "ast/BinaryExprAST.h"
 #include "ast/FunctionAST.h"
 
-// parser headers
 #include "parser/parser.h"
-
-// logger headers
-
-// kaleidoscope headers
-
-// LLVM headers
-
-// stdlib headers
+#include "optimization/optimization.h"
 
 using namespace llvm;
 
-static void HandleDefinition() {
+static void HandleDefinition(std::unique_ptr<llvm::Module> &TheModule) {
     if (auto FnAST = ParseDefinition()) {
-        if (auto *FnIR = FnAST->codegen()) {
+        if (auto *FnIR = FnAST->codegen(TheModule)) {
             fprintf(stderr, "Read function definition:");
             FnIR->print(errs());
             fprintf(stderr, "\n");
@@ -31,9 +23,9 @@ static void HandleDefinition() {
     }
 }
 
-static void HandleExtern() {
+static void HandleExtern(std::unique_ptr<llvm::Module> &TheModule) {
     if (auto ProtoAST = ParseExtern()) {
-        if (auto *FnIR = ProtoAST->codegen()) {
+        if (auto *FnIR = ProtoAST->codegen(TheModule)) {
             fprintf(stderr, "Read extern:");
             FnIR->print(errs());
             fprintf(stderr, "\n");
@@ -43,9 +35,9 @@ static void HandleExtern() {
     }
 }
 
-static void HandleTopLevelExpression() {
+static void HandleTopLevelExpression(std::unique_ptr<llvm::Module> &TheModule) {
     if (auto FnAST = ParseTopLevelExpr()) {
-        if (auto *FnIR = FnAST->codegen()) {
+        if (auto *FnIR = FnAST->codegen(TheModule)) {
             fprintf(stderr, "Read top-level expression:");
             FnIR->print(errs());
             fprintf(stderr, "\n");
@@ -55,7 +47,7 @@ static void HandleTopLevelExpression() {
     }
 }
 
-static void MainLoop() {
+static void MainLoop(std::unique_ptr<llvm::Module> &TheModule) {
     while (true) {
         fprintf(stderr, "ready> ");
 
@@ -66,13 +58,13 @@ static void MainLoop() {
                 getNextToken();
                 break;
             case tok_def:
-                HandleDefinition();
+                HandleDefinition(TheModule);
                 break;
             case tok_extern:
-                HandleExtern();
+                HandleExtern(TheModule);
                 break;
             default:
-                HandleTopLevelExpression();
+                HandleTopLevelExpression(TheModule);
                 break;
         }
     }
@@ -87,9 +79,9 @@ int main() {
     fprintf(stderr, "ready> ");
     getNextToken();
 
-    TheModule = llvm::make_unique<Module>("My awesome JIT", TheContext);
+    std::unique_ptr<llvm::Module> TheModule = llvm::make_unique<Module>("My awesome JIT", TheContext);
 
-    MainLoop();
+    MainLoop(TheModule);
 
     TheModule->print(errs(), nullptr);
 

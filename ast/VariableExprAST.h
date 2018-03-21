@@ -1,6 +1,8 @@
 #ifndef __VARIABLE_EXPR_AST_H__
 #define __VARIABLE_EXPR_AST_H__
 
+#include <utility>
+
 #include "ast/ExprAST.h"
 #include "logger/logger.h"
 
@@ -9,9 +11,9 @@ class VariableExprAST : public ExprAST {
     std::string Name;
 
 public:
-    VariableExprAST(const std::string &Name) : Name(Name) {}
+    explicit VariableExprAST(std::string Name) : Name(std::move(Name)) {}
 
-    llvm::Value *codegen() override;
+    llvm::Value *codegen(std::unique_ptr<llvm::Module> &TheModule) override;
 };
 
 #endif

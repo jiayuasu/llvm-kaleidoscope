@@ -1,9 +1,9 @@
 #include "ast/BinaryExprAST.h"
 
 // Generate LLVM code for binary expressions
-llvm::Value *BinaryExprAST::codegen() {
-    llvm::Value *L = LHS->codegen();
-    llvm::Value *R = RHS->codegen();
+llvm::Value *BinaryExprAST::codegen(std::unique_ptr<llvm::Module> &TheModule) {
+    llvm::Value *L = LHS->codegen(TheModule);
+    llvm::Value *R = RHS->codegen(TheModule);
 
     if (!L || !R) {
         return nullptr;

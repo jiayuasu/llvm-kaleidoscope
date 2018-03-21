@@ -1,6 +1,8 @@
 #ifndef __PROTOTYPE_AST_H__
 #define __PROTOTYPE_AST_H__
 
+#include <utility>
+
 #include "ast/ExprAST.h"
 #include "llvm/IR/IRBuilder.h"
 #include "kaleidoscope/kaleidoscope.h"
@@ -12,9 +14,9 @@ class PrototypeAST {
     std::vector<std::string> Args;
 
 public:
-    PrototypeAST(const std::string &name, std::vector<std::string> Args) : Name(name), Args(std::move(Args)) {}
+    PrototypeAST(std::string name, std::vector<std::string> Args) : Name(std::move(name)), Args(std::move(Args)) {}
 
-    llvm::Function *codegen();
+    llvm::Function *codegen(std::unique_ptr<llvm::Module> &TheModule);
 
     const std::string &getName() const { return Name; }
 };

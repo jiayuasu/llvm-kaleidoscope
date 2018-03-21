@@ -9,9 +9,9 @@ class NumberExprAST : public ExprAST {
     double Val;
 
 public:
-    NumberExprAST(double Val) : Val(Val) {}
+    explicit NumberExprAST(double Val) : Val(Val) {}
 
-    llvm::Value *codegen() override;
+    llvm::Value *codegen(std::unique_ptr<llvm::Module> &TheModule) override;
 };
 
 #endif
