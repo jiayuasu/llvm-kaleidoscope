@@ -7,3 +7,5 @@
 /main
 
 /llvm
+/cmake-build-debug/
+/CMakeFiles/

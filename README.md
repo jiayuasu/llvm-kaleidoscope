@@ -1,14 +1,107 @@
 # Kaleidoscope: Implementing a Language with LLVM
 
 ## How to build it
-On macOS (tested on 10.11.6).
-~~~
-# Install llvm (version 4.0, though @3.9 also works if you modify the llvm path in the Makefile)
-brew install llvm@4
+
+On Ubuntu (tested on 16.04).
+```
+Install llvm (tested 5.0, but it should work for other versions as well)
+See http://apt.llvm.org/
+cmake .
 make
 ./main
-# This should bring up a simple repl
-~~~
+This should bring up a simple repl
+```
+
+## Components
+
+The code here contains the lexer, AST and parser of Kaleidoscope. The IR code generation and optimization are also available. In other words, it is the content of LLVM Tutorial Chapter 1-4.
+
+No JIT, no Chapter 5 - 7 (If, Loop, ...).
+
+Chapter 8 "Compile to Object code" somehow doesn't work for this CMake project. Directly call LLC instead.
+
+## Generate IR in a terminal and file
+
+Enter in the terminal
+
+```
+ready> def average(x y) (x + y) * 0.5;
+```
+
+See the following sentences in the terminal
+```
+ready> Read function definition:
+define double @average(double %x, double %y) {
+entry:
+  %addtmp = fadd double %x, %y
+  %multmp = fmul double %addtmp, 5.000000e-01
+  ret double %multmp
+}
+```
+
+Press CTRL+D to properly exit.
+
+A file called `output.ir` will be generated in the same folder
+
+## Generate Assembly code from IR
+
+Enter in the terminal. I use LLVM-5.0 which is not the default LLVM on Ubuntu 16.04 so I have to specify the version of LLC (LLVM static compiler).
+
+Otherwise, "llc" command should work. See [LLC docs](http://llvm.org/docs/CommandGuide/llc.html).
+
+```
+llc-5.0 -filetype=asm output.ir -o output.s
+```
+
+## Generate object code from IR (Chapter 8)
+
+Enter in the terminal. I use LLVM-5.0 which is not the default LLVM on Ubuntu 16.04 so I have to specify the version of LLC (LLVM static compiler).
+
+Otherwise, "llc" command should work. See [LLC docs](http://llvm.org/docs/CommandGuide/llc.html).
+
+```
+llc-5.0 -filetype=obj output.ir -o output.o
+```
+
+## Link object code to an executable file (Chapter 8)
+There is a tester executable file `tester.cpp` in this project:
+
+```
+#include <iostream>
+
+extern "C" {
+    double average(double, double);
+}
+
+int main() {
+    std::cout << "average of 3.0 and 4.0: " << average(3.0, 4.0) << std::endl;
+}
+```
+
+Compile 
+
+
+```
+clang++ tester.cpp output.o -o tester
+```
+
+Run
+
+```
+./tester
+average of 3.0 and 4.0: 3.5
+```
+
+It calls the function that we entered at the beginning
+
+```
+def average(x y) (x + y) * 0.5;
+```
+
+
+---
+
+### This repo is forked from https://github.com/kornilova-l/llvm-kaleidoscope. The README below is the original post.
 
 ## Why?
 

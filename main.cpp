@@ -1,4 +1,5 @@
 // lexer headers
+#include <fstream>
 #include "lexer/lexer.h"
 #include "lexer/token.h"
 
@@ -10,6 +11,8 @@
 #include "optimization/optimization.h"
 
 using namespace llvm;
+
+
 
 static void HandleDefinition(std::unique_ptr<llvm::Module> &TheModule,
                              std::unique_ptr<llvm::legacy::FunctionPassManager> &TheFPM) {
@@ -79,16 +82,27 @@ int main() {
     BinopPrecedence['-'] = 20;
     BinopPrecedence['*'] = 40;
 
+
     fprintf(stderr, "ready> ");
     getNextToken();
 
-    std::unique_ptr<llvm::Module> TheModule = llvm::make_unique<Module>("My awesome JIT", TheContext);
+    std::unique_ptr<llvm::Module> TheModule = llvm::make_unique<Module>("", TheContext);
 
     std::unique_ptr<llvm::legacy::FunctionPassManager> TheFPM = GetFunctionPassManager(TheModule);
 
     MainLoop(TheModule, TheFPM);
 
     TheModule->print(errs(), nullptr);
+
+    // Open a file to store the generated IR
+    std::ofstream IRfile;
+    IRfile.open ("output.ir");
+    std::string IRstring;
+    raw_string_ostream OS(IRstring);
+    OS << *TheModule;
+    OS.flush();
+    IRfile << IRstring << "\n";
+    IRfile.close();
 
     return 0;
 }
